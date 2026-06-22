@@ -18,9 +18,9 @@ jobs:
           # 1. 强制配置 Git 使用标准的 HF 访问令牌认证
           git config --global credential.helper store
           
-          # 2. 将凭证动态写入系统，避开 URL 拼接密码的古老限制
-          echo "https://ericz-ath:$HF_TOKEN@huggingface.co" > ~/.git-credentials
+          # 2. 将凭证动态写入系统，使用你在 HF 上的真实用户名 FacingZ
+          echo "https://FacingZ:$HF_TOKEN@huggingface.co" > ~/.git-credentials
           
-          # 3. 添加干净的远程仓库地址并强制推流
-          git remote add hf https://huggingface.co/spaces/EricZ-Ath/dtc-backend
+          # 3. 锁定精准的 HF 目标仓库路径并强行推流
+          git remote add hf https://huggingface.co/spaces/FacingZ/dtcprojects
           git push --force hf main
