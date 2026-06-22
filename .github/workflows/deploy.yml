@@ -1,4 +1,4 @@
-name: Sync to Hugging Face Spaces
+name: Build and Push Docker to HF Spaces
 on:
   push:
     branches: [ main ]
@@ -7,32 +7,26 @@ jobs:
   deploy:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Log in to Hugging Face Container Registry
+        uses: docker/login-action@v3
         with:
-          fetch-depth: 0
-          
-      - name: Push to HF Spaces
-        env:
-          HF_TOKEN: ${{ secrets.HF_TOKEN }}
-        run: |
-          # 1. 物理抹除：在云端运行环境中彻底拔掉前端文件夹（反正 HF 部署后端不需要它）
-          rm -rf apps/storefront
-          
-          # 2. 斩断历史：把现有的 .git 历史记录彻底粉碎
-          rm -rf .git
-          
-          # 3. 浴火重生：重新初始化一个干净、毫无历史包袱的全新 Git 仓库
-          git init -b main
-          git config --global user.email "bot@github.com"
-          git config --global user.name "GitHub Action"
-          
-          # 4. 把剔除了前端二进制文件的纯文本代码全部加进来，做一次“初夜般干净”的提交
-          git add .
-          git commit -m "chore: initial clean build for hf backend"
-          
-          # 5. 配置凭证并强行砸进 Hugging Face
-          git config --global credential.helper store
-          echo "https://FacingZ:$HF_TOKEN@huggingface.co" > ~/.git-credentials
-          
-          git remote add hf https://huggingface.co/spaces/FacingZ/dtcprojects
-          git push --force hf main
+          registry: registry.hf.space
+          username: FacingZ
+          password: ${{ secrets.HF_TOKEN }}
+
+      - name: Build and Push Docker Image
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          file: ./Dockerfile
+          push: true
+          # 强行把打包好的纯净后端镜像，塞进你 HF Space 的底层储存中
+          tags: registry.hf.space/facingz-dtcprojects:latest
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
