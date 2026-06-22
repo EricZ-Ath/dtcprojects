@@ -1,7 +1,7 @@
 name: Sync to Hugging Face Spaces
 on:
   push:
-    branches: [ main ] # 或者是你的主分支名，如果是 master 请改为 master
+    branches: [ main ]
 
 jobs:
   deploy:
@@ -15,6 +15,12 @@ jobs:
         env:
           HF_TOKEN: ${{ secrets.HF_TOKEN }}
         run: |
-          # 将你的用户名和 Space 名字替换到下方 URL 中
-          git remote add hf https://ericz-ath:$HF_TOKEN@huggingface.co/spaces/EricZ-Ath/dtc-backend
+          # 1. 强制配置 Git 使用标准的 HF 访问令牌认证
+          git config --global credential.helper store
+          
+          # 2. 将凭证动态写入系统，避开 URL 拼接密码的古老限制
+          echo "https://ericz-ath:$HF_TOKEN@huggingface.co" > ~/.git-credentials
+          
+          # 3. 添加干净的远程仓库地址并强制推流
+          git remote add hf https://huggingface.co/spaces/EricZ-Ath/dtc-backend
           git push --force hf main
