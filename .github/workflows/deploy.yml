@@ -1,0 +1,20 @@
+name: Sync to Hugging Face Spaces
+on:
+  push:
+    branches: [ main ] # 或者是你的主分支名，如果是 master 请改为 master
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          
+      - name: Push to HF Spaces
+        env:
+          HF_TOKEN: ${{ secrets.HF_TOKEN }}
+        run: |
+          # 将你的用户名和 Space 名字替换到下方 URL 中
+          git remote add hf https://ericz-ath:$HF_TOKEN@huggingface.co/spaces/EricZ-Ath/dtc-backend
+          git push --force hf main
